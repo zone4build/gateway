@@ -1,0 +1,25 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy config-client
+COPY config-client/ /app/config-client/
+WORKDIR /app/config-client
+RUN npm install
+
+# Copy gateway
+COPY gateway/ /app/gateway/
+WORKDIR /app/gateway
+
+# Install dependencies
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Health check
+HEALTHCHECK --interval=5s --timeout=3s --retries=5 \
+  CMD node -e "require('http').get('http://localhost:4000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+
+# Expose port
+EXPOSE 4000
+
+# Start gateway
+CMD ["node", "gateway-advanced.js"]
