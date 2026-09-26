@@ -1,25 +1,24 @@
-FROM node:18-alpine
+FROM node:20-slim AS base
 
+FROM base AS deps
 WORKDIR /app
+COPY package*.json ./
+RUN npm install --production --ignore-scripts
 
-# Copy package files
-COPY packages/gateway/package*.json ./
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-# Install dependencies
-RUN npm install
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --gid 1001 nodeuser
 
-# Copy config-client
-COPY packages/config-client ./config-client
-RUN cd config-client && npm install --production
+# Copy dependencies from deps stage
+COPY --chown=nodeuser:nodejs --from=deps /app/node_modules ./node_modules
+# Copy source code
+COPY --chown=nodeuser:nodejs . .
 
-# Copy gateway
-COPY packages/gateway ./gateway
-RUN cd gateway && npm install
-
-WORKDIR /app/gateway
-
-# Expose port
+USER nodeuser
 EXPOSE 4000
+ENV PORT=4000
 
-# Start server
 CMD ["node", "server.js"]

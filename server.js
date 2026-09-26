@@ -21,7 +21,12 @@ const cors = require('@fastify/cors');
 const helmet = require('@fastify/helmet');
 const rateLimit = require('@fastify/rate-limit');
 const Redis = require('ioredis');
-const ConfigClient = require('../config-client');
+let ConfigClient;
+try {
+  ConfigClient = require('./config-client');
+} catch (e) {
+  ConfigClient = require('../config-client');
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // ⚙️ CONFIGURATION
