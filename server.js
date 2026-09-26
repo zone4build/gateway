@@ -171,6 +171,12 @@ async function startup() {
     // 5️⃣ License enforcement middleware
     fastify.addHook('preHandler', async (request, reply) => {
       const path = request.url.split('?')[0]; // Remove query params
+
+      // Always allow health checks and system endpoints
+      if (path === '/health' || path === '/ready' || path === '/version') {
+        return;
+      }
+
       const tierConfig = LICENSE_TIERS[licenseState.LICENSE_TIER] || LICENSE_TIERS.FREE;
 
       // Check if endpoint is allowed for this tier
@@ -268,15 +274,17 @@ async function startup() {
 
 async function setupProxyRoutes() {
   // Use routes from config-api or fall back to defaults
-  const routes = gatewayConfig.ROUTES || [
-    { prefix: '/auth',         target: 'http://auth-api:3000' },
-    { prefix: '/generic',      target: 'http://generic-api:3001/api/generic' },
-    { prefix: '/doc',          target: 'http://doc-api:3006' },
-    { prefix: '/commerce',     target: 'http://commerce-api:3001' },
-    { prefix: '/notification', target: 'http://notification-api:3005' },
-    { prefix: '/compliance',   target: 'http://compliance-api:3010' },
-    { prefix: '/ai',           target: 'http://singulary:3000' }  // Singulary IDE (WebSocket!)
-  ];
+  const routes = (gatewayConfig && Array.isArray(gatewayConfig.ROUTES) && gatewayConfig.ROUTES.length > 0)
+    ? gatewayConfig.ROUTES
+    : [
+        { prefix: '/auth',         target: 'http://saas-platform-zone4food-saas-platform-auth-api:3000' },
+        { prefix: '/generic',      target: 'http://saas-platform-zone4food-saas-platform-generic-api:3000' },
+        { prefix: '/doc',          target: 'http://saas-platform-zone4food-saas-platform-doc-api:3000' },
+        { prefix: '/commerce',     target: 'http://saas-platform-zone4food-saas-platform-commerce-api:3000' },
+        { prefix: '/notification', target: 'http://saas-platform-zone4food-saas-platform-notification-api:3000' },
+        { prefix: '/compliance',   target: 'http://saas-platform-zone4food-saas-platform-compliance-api:3000' },
+        { prefix: '/ai',           target: 'http://singulary:3000' }  // Singulary IDE (WebSocket!)
+      ];
 
   console.log('📍 [GATEWAY] Registering proxy routes:');
 
