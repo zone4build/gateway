@@ -66,7 +66,7 @@ const LICENSE_TIERS = {
   },
   PRO: {
     maxRequestsPerMinute: 10000,
-    allowedPrefixes: ['/auth', '/doc', '/generic', '/commerce', '/ai'],
+    allowedPrefixes: ['/auth', '/doc', '/generic', '/commerce', '/ai', '/notification', '/workflow'],
     allowWebSocket: true,
     description: 'Pro tier - full access'
   },
@@ -187,11 +187,12 @@ async function startup() {
 
         if (!isAllowed) {
           console.warn(`🚫 [GATEWAY] Access denied for ${path} on ${licenseState.LICENSE_TIER} tier`);
+          const requiredTier = (path.startsWith('/compliance') || licenseState.LICENSE_TIER === 'PRO') ? 'ENTERPRISE' : 'PRO or higher';
           return reply.code(403).send({
             error: 'Forbidden',
             message: `Endpoint ${path} requires higher license tier`,
             currentTier: licenseState.LICENSE_TIER,
-            requiredTier: 'PRO or higher'
+            requiredTier
           });
         }
       }

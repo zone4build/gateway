@@ -56,7 +56,7 @@ const TIER_CAPABILITIES = {
   },
   'PRO': {
     maxRequestsPerMinute: 10000,
-    allowedEndpoints: ['/auth', '/doc', '/generic', '/commerce', '/ai'],
+    allowedEndpoints: ['/auth', '/doc', '/generic', '/commerce', '/ai', '/notification', '/workflow'],
     allowWebSocket: true
   },
   'ENTERPRISE': {
